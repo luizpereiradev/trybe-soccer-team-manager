@@ -1,49 +1,55 @@
-import express from 'express';
-import cacauTrybe from './cacautrybe';
+import express, { Application, Request, Response } from 'express';
+import { teams } from './teams';
+import { validateTeam } from './middlewares/validateTeam';
+import { existingId } from './middlewares/existingId';
 
-const app = express();
+const app: Application = express();
+
+app.listen(3001, () => console.log('Ouvindo na porta 3001!'));
+
+let nextId: number = 3;
+
+interface Team {
+  id: number;
+  nome: string;
+  sigla: string;
+}
 
 app.use(express.json());
 
-app.listen(3001, () => console.log('Listening on port 3000'));
+app.get('/teams', (req: Request, res: Response) => res.json(teams));
 
-app.put('/chocolates/:id', async (req, res) => {
-  const { id } = req.params;
-  const body = req.body;
-  const chocolate = await cacauTrybe.updateChocolate(Number(id), body.name, body.brandId);
-  if(!chocolate) return res.status(404).json({ message: 'Chocolate not found' });
-  res.status(200).json(chocolate);
+app.get('/teams/:id', existingId, (req: Request,  res: Response) => {
+  const id: number = Number(req.params.id);
+  const team: Team | undefined = teams.find(t => t.id === id);
+  if (team) {
+    res.json(team);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
-app.get('/chocolates', async (req, res) => {
-  const chocolates = await cacauTrybe.getAllChocolates();
-  res.status(200).json({ chocolates });
+app.post('/teams', validateTeam, (req: Request, res: Response) => {
+  const team: Team = { id: nextId, ...req.body };
+  teams.push(team);
+  nextId += 1;
+  res.status(201).json(team);
 });
 
-app.get('/chocolates/total', async (req, res) => {
-  const totalChocolates = await cacauTrybe.getTotalQuantityOfChocolates();
-  res.status(200).json({ totalChocolates });
+app.put('/teams/:id', validateTeam, existingId, (req: Request, res: Response) => {
+  const id: number = Number(req.params.id);
+  const team = teams.find(t => t.id === id);
+  const index: number = teams.indexOf(team as Team);
+  const updated: Team = { id, ...req.body };
+  teams.splice(index, 1, updated);
+  res.status(201).json(updated);
 });
 
-app.get('/chocolates/search', async (req, res) => {
-  const { name } = req.query;
-  const chocolates = await cacauTrybe.getChocolatesByName(String(name));
-  if (!chocolates.length) return res.status(404).json({ message: 'Chocolate not found' });
-  res.status(200).json({ chocolates });
-});
-
-app.get('/chocolates/:id', async (req, res) => {
-  const { id } = req.params;
-  // Usamos o Number para converter o id em um inteiro
-  const chocolate = await cacauTrybe.getChocolateById(Number(id));
-  if (!chocolate) return res.status(404).json({ message: 'Chocolate not found' });
-  res.status(200).json({ chocolate });
-});
-
-app.get('/chocolates/brand/:brandId', async (req, res) => {
-  const { brandId } = req.params;
-  const chocolates = await cacauTrybe.getChocolatesByBrand(Number(brandId));
-  res.status(200).json({ chocolates });
+app.delete('/teams/:id', existingId, (req: Request, res: Response) => {
+  const id: number = Number(req.params.id);
+  const team = teams.find(t => t.id === id);
+  const index: number = teams.indexOf(team as Team);
+  teams.splice(index, 1);
 });
 
 export default app;
