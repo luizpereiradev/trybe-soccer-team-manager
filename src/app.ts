@@ -2,6 +2,8 @@ import express, { Application, Request, Response } from 'express';
 import { teams } from './teams';
 import { validateTeam } from './middlewares/validateTeam';
 import { existingId } from './middlewares/existingId';
+import { apiCredentials } from './middlewares/apiCredentials';
+import 'express-async-errors';
 
 const app: Application = express();
 
@@ -16,6 +18,7 @@ interface Team {
 }
 
 app.use(express.json());
+app.use(apiCredentials);
 
 app.get('/teams', (req: Request, res: Response) => res.json(teams));
 
