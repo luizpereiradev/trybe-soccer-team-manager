@@ -130,4 +130,65 @@ describe("Testando a API Cacau Trybe", function () {
     });
   });
 
+  describe('Usando o método GET em /chocolates/search?name=Mounds', function () {
+    it('Retorna o chocolate Mounds', async function () {
+      const response = await chai
+        .request(app)
+        .get('/chocolates/search?name=Mounds');
+
+      expect(response.status).to.be.equal(200);
+      expect(response.body.chocolates).to.deep.equal([
+        {
+          id: 4,
+          name: 'Mounds',
+          brandId: 3,
+        },
+      ]);
+    });
+  });
+
+  describe('Usando o método GET em /chocolates/search?name=ZZZ', function () {
+    it('Retorna status 404 com a mensagem "Chocolate not found"', async function () {
+      const response = await chai
+        .request(app)
+        .get('/chocolates/search?name=ZZZ');
+
+      expect(response.status).to.be.equal(404);
+      expect(response.body).to.deep.equal({ message: 'Chocolate not found' });
+    });
+  });
+
+  describe('Usando o método put em /chocolates/:id', function () {
+    it('Atualiza o chocolate Mounds', async function () {
+      const response = await chai
+        .request(app)
+        .put('/chocolates/4')
+        .send({ 
+          "name": "Mint Pretty Good",
+          "brandId": 2
+        });
+
+      expect(response.status).to.be.equal(200);
+      expect(response.body).to.deep.equal({
+        "id": 4,
+        "name": "Mint Pretty Good",
+        "brandId": 2
+      });
+    });
+  });
+
+  describe('Usando o método put em /chocolates/:id', function () {
+    it('Retorna status 404 com a mensagem "Chocolate not found"', async function () {
+      const response = await chai
+        .request(app)
+        .put('/chocolates/999')
+        .send({ 
+          "name": "Mint Pretty Good",
+          "brandId": 2
+        });
+
+      expect(response.status).to.be.equal(404);
+      expect(response.body).to.deep.equal({ message: 'Chocolate not found' });
+    });
+  });
 });

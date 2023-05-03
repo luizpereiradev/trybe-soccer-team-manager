@@ -5,7 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "test": "mocha --require ts-node/register tests/**/*.test.ts --exit",
-    "dev": "nodemon --watch 'src/' --exec 'ts-node src/server.ts' -e ts",
+    "dev": "nodemon --watch 'src/' --exec 'ts-node src/app.ts' -e ts",
     "build": "tsc"
   },
   "keywords": [],
